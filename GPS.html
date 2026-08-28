@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的 GPS 定位</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 30px;
+    }
+
+    button {
+      font-size: 20px;
+      padding: 15px 25px;
+      border-radius: 10px;
+      border: none;
+      background: #2e7d32;
+      color: white;
+    }
+
+    #result {
+      margin-top: 25px;
+      font-size: 18px;
+      line-height: 2;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🌲 森林巡查 GPS</h1>
+
+  <button onclick="getLocation()">
+    📍 取得我的位置
+  </button>
+
+  <div id="result">
+    尚未定位
+  </div>
+
+  <script>
+    function getLocation() {
+
+      const result = document.getElementById("result");
+
+      if (!navigator.geolocation) {
+        result.innerHTML = "❌ 你的手機不支援 GPS 定位";
+        return;
+      }
+
+      result.innerHTML = "📡 正在定位中，請稍候...";
+
+      navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const accuracy = position.coords.accuracy;
+
+          result.innerHTML =
+            "📍 緯度： " + latitude + "<br>" +
+            "📍 經度： " + longitude + "<br>" +
+            "🎯 精度：約 " + Math.round(accuracy) + " 公尺";
+        },
+
+        function(error) {
+
+          result.innerHTML =
+            "❌ 定位失敗<br>" +
+            "請確認手機的「位置」功能已開啟";
+        }
+
+      );
+    }
+  </script>
+
+</body>
+</html>
