@@ -125,51 +125,117 @@ function getLocation() {
   );
 
 }
-
 function saveRecord() {
 
-  const linban =
-    document.getElementById("linban").value;
+  const linban = document.getElementById("linban").value;
+  const resultType = document.getElementById("resultType").value;
+  const note = document.getElementById("note").value;
+  const photo = document.getElementById("photo");
 
-  const resultType =
-    document.getElementById("resultType").value;
+  const time = new Date().toLocaleString("zh-TW");
 
-  const note =
-    document.getElementById("note").value;
-
-  const photo =
-    document.getElementById("photo");
-
-  const time =
-    new Date().toLocaleString("zh-TW");
-
-  let photoHTML = "";
-
+  // 如果有照片，先轉成可以儲存的格式
   if (photo.files.length > 0) {
 
-    const imageURL =
-      URL.createObjectURL(photo.files[0]);
+    const reader = new FileReader();
 
-    photoHTML =
-      "<br><img src='" + imageURL +
-      "' style='max-width:300px; border-radius:10px;'>";
+    reader.onload = function(e) {
 
+      const record = {
+        time: time,
+        linban: linban,
+        result: resultType,
+        note: note,
+        latitude: latitude,
+        longitude: longitude,
+        photo: e.target.result
+      };
+
+      saveToStorage(record);
+    };
+
+    reader.readAsDataURL(photo.files[0]);
+
+  } else {
+
+    const record = {
+      time: time,
+      linban: linban,
+      result: resultType,
+      note: note,
+      latitude: latitude,
+      longitude: longitude,
+      photo: ""
+    };
+
+    saveToStorage(record);
   }
-
-  document.getElementById("record").innerHTML =
-
-    "<hr>" +
-    "<h2>📋 巡查紀錄</h2>" +
-    "🕐 時間：" + time + "<br>" +
-    "🌲 林班：" + linban + "<br>" +
-    "📍 緯度：" + latitude + "<br>" +
-    "📍 經度：" + longitude + "<br>" +
-    "📌 結果：" + resultType + "<br>" +
-    "📝 備註：" + note +
-    photoHTML;
 }
 
 
+function saveToStorage(record) {
+
+  let records =
+    JSON.parse(localStorage.getItem("forestRecords")) || [];
+
+  records.push(record);
+
+  localStorage.setItem(
+    "forestRecords",
+    JSON.stringify(records)
+  );
+
+  alert("✅ 巡查紀錄已儲存！");
+
+  showRecords();
+}
+  
+function showRecords() {
+
+  const recordBox =
+    document.getElementById("record");
+
+  let records =
+    JSON.parse(localStorage.getItem("forestRecords")) || [];
+
+  if (records.length === 0) {
+
+    recordBox.innerHTML =
+      "<h2>📋 巡查紀錄</h2>" +
+      "<p>目前還沒有紀錄</p>";
+
+    return;
+  }
+
+  recordBox.innerHTML =
+    "<h2>📋 巡查紀錄</h2>";
+
+  records.forEach(function(item, index) {
+
+    recordBox.innerHTML +=
+
+      "<div style='border:1px solid #ccc;" +
+      "padding:15px;margin:15px 0;border-radius:10px;'>" +
+
+      "<b>第 " + (index + 1) + " 筆</b><br><br>" +
+
+      "🕐 時間：" + item.time + "<br>" +
+      "🌲 林班：" + item.linban + "<br>" +
+      "📍 緯度：" + item.latitude + "<br>" +
+      "📍 經度：" + item.longitude + "<br>" +
+      "📌 結果：" + item.result + "<br>" +
+      "📝 備註：" + item.note +
+
+      (item.photo
+        ? "<br><br><img src='" + item.photo +
+          "' style='max-width:100%;border-radius:10px;'>"
+        : "") +
+
+      "</div>";
+
+  });
+}
+  showRecords();
 </script>
   
 
