@@ -53,6 +53,22 @@
 
   <br><br>
 
+<label>現場照片</label><br>
+
+<input
+  id="photo"
+  type="file"
+  accept="image/*"
+  capture="environment"
+>
+
+<br>
+
+<img
+  id="preview"
+  style="max-width:300px; margin-top:15px; display:none;"
+>
+
   <button onclick="getLocation()">
     📍 取得 GPS
   </button>
@@ -110,7 +126,6 @@ function getLocation() {
 
 }
 
-
 function saveRecord() {
 
   const linban =
@@ -122,8 +137,24 @@ function saveRecord() {
   const note =
     document.getElementById("note").value;
 
+  const photo =
+    document.getElementById("photo");
+
   const time =
     new Date().toLocaleString("zh-TW");
+
+  let photoHTML = "";
+
+  if (photo.files.length > 0) {
+
+    const imageURL =
+      URL.createObjectURL(photo.files[0]);
+
+    photoHTML =
+      "<br><img src='" + imageURL +
+      "' style='max-width:300px; border-radius:10px;'>";
+
+  }
 
   document.getElementById("record").innerHTML =
 
@@ -134,9 +165,10 @@ function saveRecord() {
     "📍 緯度：" + latitude + "<br>" +
     "📍 經度：" + longitude + "<br>" +
     "📌 結果：" + resultType + "<br>" +
-    "📝 備註：" + note;
-
+    "📝 備註：" + note +
+    photoHTML;
 }
+
 
 </script>
   
