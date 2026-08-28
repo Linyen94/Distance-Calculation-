@@ -28,80 +28,118 @@
     }
   </style>
 </head>
-
 <body>
 
-  <h1>🌲 森林巡查 GPS</h1>
+  <h1>🌲 森林巡查紀錄</h1>
+
+  <label>林班號</label><br>
+  <input id="linban" type="text" placeholder="例如：竹東81林班">
+
+  <br><br>
+
+  <label>巡查結果</label><br>
+  <select id="resultType">
+    <option>正常</option>
+    <option>發現異常</option>
+    <option>發現崩塌</option>
+    <option>發現違規</option>
+    <option>需要後續處理</option>
+  </select>
+
+  <br><br>
+
+  <label>備註</label><br>
+  <textarea id="note" placeholder="輸入巡查情況"></textarea>
+
+  <br><br>
 
   <button onclick="getLocation()">
-    📍 取得我的位置
+    📍 取得 GPS
   </button>
 
-  <div id="result">
+  <div id="gps">
     尚未定位
   </div>
 
-  
+  <br>
+
+  <button onclick="saveRecord()">
+    💾 儲存巡查紀錄
+  </button>
+
+  <div id="record"></div>
+
+
 <script>
-  let latitude;
-  let longitude;
 
-  function getLocation() {
+let latitude = "";
+let longitude = "";
 
-    const result = document.getElementById("result");
+function getLocation() {
 
-    if (!navigator.geolocation) {
-      result.innerHTML = "❌ 手機不支援 GPS 定位";
-      return;
+  const gps = document.getElementById("gps");
+
+  gps.innerHTML = "📡 正在定位...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    function(position) {
+
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
+
+      gps.innerHTML =
+        "📍 緯度：" + latitude.toFixed(6) + "<br>" +
+        "📍 經度：" + longitude.toFixed(6);
+
+    },
+
+    function() {
+
+      gps.innerHTML = "❌ GPS 定位失敗";
+
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
     }
 
-    result.innerHTML = "📡 正在取得 GPS 位置...";
+  );
 
-    navigator.geolocation.getCurrentPosition(
-
-      function(position) {
-
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
-
-        const accuracy = position.coords.accuracy;
-
-        result.innerHTML =
-          "📍 緯度：" + latitude.toFixed(6) + "<br>" +
-          "📍 經度：" + longitude.toFixed(6) + "<br>" +
-          "🎯 定位精度：約 " + Math.round(accuracy) + " 公尺<br><br>" +
-
-          '<button onclick="openMap()">🗺️ 開啟地圖</button>';
-      },
-
-      function(error) {
-
-        result.innerHTML =
-          "❌ 定位失敗<br>" +
-          "請確認手機的位置功能已開啟";
-      },
-
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
-      }
-
-    );
-  }
+}
 
 
-  function openMap() {
+function saveRecord() {
 
-    if (latitude && longitude) {
+  const linban =
+    document.getElementById("linban").value;
 
-      const url =
-        "https://www.google.com/maps/search/?api=1&query="
-        + latitude + "," + longitude;
+  const resultType =
+    document.getElementById("resultType").value;
 
-      window.open(url, "_blank");
-    }
-  }
+  const note =
+    document.getElementById("note").value;
+
+  const time =
+    new Date().toLocaleString("zh-TW");
+
+  document.getElementById("record").innerHTML =
+
+    "<hr>" +
+    "<h2>📋 巡查紀錄</h2>" +
+    "🕐 時間：" + time + "<br>" +
+    "🌲 林班：" + linban + "<br>" +
+    "📍 緯度：" + latitude + "<br>" +
+    "📍 經度：" + longitude + "<br>" +
+    "📌 結果：" + resultType + "<br>" +
+    "📝 備註：" + note;
+
+}
+
 </script>
+  
+
 </body>
 </html>
