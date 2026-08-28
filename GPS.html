@@ -41,42 +41,67 @@
     尚未定位
   </div>
 
-  <script>
-    function getLocation() {
+  
+<script>
+  let latitude;
+  let longitude;
 
-      const result = document.getElementById("result");
+  function getLocation() {
 
-      if (!navigator.geolocation) {
-        result.innerHTML = "❌ 你的手機不支援 GPS 定位";
-        return;
+    const result = document.getElementById("result");
+
+    if (!navigator.geolocation) {
+      result.innerHTML = "❌ 手機不支援 GPS 定位";
+      return;
+    }
+
+    result.innerHTML = "📡 正在取得 GPS 位置...";
+
+    navigator.geolocation.getCurrentPosition(
+
+      function(position) {
+
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+
+        const accuracy = position.coords.accuracy;
+
+        result.innerHTML =
+          "📍 緯度：" + latitude.toFixed(6) + "<br>" +
+          "📍 經度：" + longitude.toFixed(6) + "<br>" +
+          "🎯 定位精度：約 " + Math.round(accuracy) + " 公尺<br><br>" +
+
+          '<button onclick="openMap()">🗺️ 開啟地圖</button>';
+      },
+
+      function(error) {
+
+        result.innerHTML =
+          "❌ 定位失敗<br>" +
+          "請確認手機的位置功能已開啟";
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
 
-      result.innerHTML = "📡 正在定位中，請稍候...";
+    );
+  }
 
-      navigator.geolocation.getCurrentPosition(
 
-        function(position) {
+  function openMap() {
 
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          const accuracy = position.coords.accuracy;
+    if (latitude && longitude) {
 
-          result.innerHTML =
-            "📍 緯度： " + latitude + "<br>" +
-            "📍 經度： " + longitude + "<br>" +
-            "🎯 精度：約 " + Math.round(accuracy) + " 公尺";
-        },
+      const url =
+        "https://www.google.com/maps/search/?api=1&query="
+        + latitude + "," + longitude;
 
-        function(error) {
-
-          result.innerHTML =
-            "❌ 定位失敗<br>" +
-            "請確認手機的「位置」功能已開啟";
-        }
-
-      );
+      window.open(url, "_blank");
     }
-  </script>
-
+  }
+</script>
 </body>
 </html>
