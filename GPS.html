@@ -107,6 +107,8 @@ function getLocation() {
       gps.innerHTML =
         "📍 緯度：" + latitude.toFixed(6) + "<br>" +
         "📍 經度：" + longitude.toFixed(6);
+        "<br><br>" +
+        "<button onclick='openMap()'>🗺️ 查看地圖</button>";
 
     },
 
@@ -234,6 +236,19 @@ function showRecords() {
       "</div>";
 
   });
+}
+  function openMap() {
+
+  if (!latitude || !longitude) {
+    alert("❌ 請先取得 GPS 位置");
+    return;
+  }
+
+  const mapURL =
+    "https://www.google.com/maps/search/?api=1&query=" +
+    latitude + "," + longitude;
+
+  window.open(mapURL, "_blank");
 }
   showRecords();
 </script>
