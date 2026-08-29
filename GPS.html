@@ -454,6 +454,16 @@ function showRecords() {
     }).join("")
 
   : "")+
+  "<br><br>" +
+  
+  "<button onclick='openRecordMap(" + index + ")'>" +
+  "🗺️ 查看位置" +
+  "</button>" +
+  
+  "<button onclick='deleteRecord(" + index + ")' " +
+  "style='background:#c62828;margin-left:10px;'>" +
+  "🗑️ 刪除" +
+  "</button>" +
 
       "</div>";
 
@@ -490,7 +500,61 @@ function openMap() {
   );
 
 }
+// ==========================
+// 🚀 檢視紀錄地圖位置
+// ==========================
+  function openRecordMap(index) {
 
+  const records =
+    JSON.parse(
+      localStorage.getItem("forestRecords")
+    ) || [];
+
+  const item = records[index];
+
+  if (!item.latitude || !item.longitude) {
+
+    alert("❌ 這筆紀錄沒有 GPS 座標");
+
+    return;
+
+  }
+
+  const url =
+    "https://www.google.com/maps/search/?api=1&query=" +
+    item.latitude + "," +
+    item.longitude;
+
+  window.open(url, "_blank");
+
+}
+
+// ==========================
+// 🚀 刪除紀錄
+// ==========================
+function deleteRecord(index) {
+
+  const records =
+    JSON.parse(
+      localStorage.getItem("forestRecords")
+    ) || [];
+
+  if (
+    confirm("確定要刪除第 " + (index + 1) + " 筆巡查紀錄嗎？")
+  ) {
+
+    records.splice(index, 1);
+
+    localStorage.setItem(
+      "forestRecords",
+      JSON.stringify(records)
+    );
+
+    showRecords();
+
+  }
+
+}
 
 // ==========================
 // 🚀 網頁開啟時載入紀錄
