@@ -191,29 +191,60 @@ function saveRecord() {
     new Date().toLocaleString("zh-TW");
 
 
-  // ==========================
-  // 📷 有照片
-  // ==========================
+  // 沒有照片
+  if (photo.files.length === 0) {
 
-  if (photo.files.length > 0) {
+    const record = {
 
-    compressImage(photo.files[0], function(imageData) {
+      time: time,
+      linban: linban,
+      result: resultType,
+      note: note,
+      latitude: latitude,
+      longitude: longitude,
+      photos: []
+
+    };
+
+    saveToStorage(record);
+
+    return;
+  }
+
+
+  // 有多張照片
+  const files = Array.from(photo.files);
+
+  const photoPromises = files.map(function(file) {
+
+    return new Promise(function(resolve) {
+
+      compressImage(file, function(imageData) {
+
+        resolve(imageData);
+
+      });
+
+    });
+
+  });
+
+
+  // 等所有照片都壓縮完成
+  Promise.all(photoPromises)
+    .then(function(images) {
 
       const record = {
 
         time: time,
-
         linban: linban,
-
         result: resultType,
-
         note: note,
-
         latitude: latitude,
-
         longitude: longitude,
 
-        photo: imageData
+        // 📷 多張照片
+        photos: images
 
       };
 
@@ -221,39 +252,7 @@ function saveRecord() {
 
     });
 
-  }
-
-  // ==========================
-  // 📷 沒照片
-  // ==========================
-
-  else {
-
-    const record = {
-
-      time: time,
-
-      linban: linban,
-
-      result: resultType,
-
-      note: note,
-
-      latitude: latitude,
-
-      longitude: longitude,
-
-      photo: ""
-
-    };
-
-    saveToStorage(record);
-
-  }
-
 }
-
-
 // ==========================
 // 🗜️ 壓縮照片
 // ==========================
@@ -437,14 +436,24 @@ function showRecords() {
       "📝 備註：" +
       item.note +
 
-      (item.photo
+      (item.photos && item.photos.length > 0
 
         ? "<br><br>" +
-          "<img src='" +
-          item.photo +
-          "' style='max-width:100%;border-radius:10px;'>"
 
-        : "") +
+          item.photos.map(function(photo) {
+
+              return "<img src='" +
+                photo +
+                "' style='" +
+                "width:120px;" +
+                "height:120px;" +
+                "object-fit:cover;" +
+                "margin:5px;" +
+                "border-radius:10px;'>";
+
+    }).join("")
+
+  : "")+
 
       "</div>";
 
