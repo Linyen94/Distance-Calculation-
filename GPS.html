@@ -59,17 +59,11 @@
   id="photo"
   type="file"
   accept="image/*"
-  capture="environment"
   multiple
 >
 
 <div id="photoPreview"></div>
 <br>
-
-<img
-  id="preview"
-  style="max-width:300px; margin-top:15px; display:none;"
->
 
   <button onclick="getLocation()">
     📍 取得 GPS
@@ -149,17 +143,23 @@ function getLocation() {
 document.getElementById("photo").addEventListener("change", function(event) {
 
   const files = event.target.files;
-  const preview = document.getElementById("photoPreview");
+
+  const preview =
+    document.getElementById("photoPreview");
 
   preview.innerHTML = "";
 
   for (let i = 0; i < files.length; i++) {
 
-    const img = document.createElement("img");
+    const img =
+      document.createElement("img");
 
-    img.src = URL.createObjectURL(files[i]);
+    img.src =
+      URL.createObjectURL(files[i]);
 
     img.style.width = "120px";
+    img.style.height = "120px";
+    img.style.objectFit = "cover";
     img.style.margin = "5px";
     img.style.borderRadius = "8px";
 
