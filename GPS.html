@@ -60,8 +60,10 @@
   type="file"
   accept="image/*"
   capture="environment"
+  multiple
 >
 
+<div id="photoPreview"></div>
 <br>
 
 <img
@@ -144,20 +146,25 @@ function getLocation() {
 // ==========================
 // 📷 照片預覽
 // ==========================
-
 document.getElementById("photo").addEventListener("change", function(event) {
 
-  const file = event.target.files[0];
+  const files = event.target.files;
+  const preview = document.getElementById("photoPreview");
 
-  if (!file) {
-    return;
+  preview.innerHTML = "";
+
+  for (let i = 0; i < files.length; i++) {
+
+    const img = document.createElement("img");
+
+    img.src = URL.createObjectURL(files[i]);
+
+    img.style.width = "120px";
+    img.style.margin = "5px";
+    img.style.borderRadius = "8px";
+
+    preview.appendChild(img);
   }
-
-  const preview = document.getElementById("preview");
-
-  preview.src = URL.createObjectURL(file);
-
-  preview.style.display = "block";
 
 });
 
