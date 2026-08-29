@@ -91,11 +91,23 @@
 let latitude = "";
 let longitude = "";
 
+
+// ==========================
+// 📍 GPS 定位
+// ==========================
+
 function getLocation() {
 
   const gps = document.getElementById("gps");
 
   gps.innerHTML = "📡 正在定位...";
+
+  if (!navigator.geolocation) {
+
+    gps.innerHTML = "❌ 此手機不支援 GPS 定位";
+    return;
+
+  }
 
   navigator.geolocation.getCurrentPosition(
 
@@ -109,9 +121,10 @@ function getLocation() {
         "📍 經度：" + longitude.toFixed(6) +
         "<br><br>" +
         "<button onclick='openMap()'>🗺️ 查看地圖</button>";
+
     },
 
-    function() {
+    function(error) {
 
       gps.innerHTML = "❌ GPS 定位失敗";
 
@@ -126,78 +139,244 @@ function getLocation() {
   );
 
 }
+
+
+// ==========================
+// 📷 照片預覽
+// ==========================
+
+document.getElementById("photo").addEventListener("change", function(event) {
+
+  const file = event.target.files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const preview = document.getElementById("preview");
+
+  preview.src = URL.createObjectURL(file);
+
+  preview.style.display = "block";
+
+});
+
+
+// ==========================
+// 💾 儲存巡查紀錄
+// ==========================
+
 function saveRecord() {
 
-  const linban = document.getElementById("linban").value;
-  const resultType = document.getElementById("resultType").value;
-  const note = document.getElementById("note").value;
-  const photo = document.getElementById("photo");
+  const linban =
+    document.getElementById("linban").value;
 
-  const time = new Date().toLocaleString("zh-TW");
+  const resultType =
+    document.getElementById("resultType").value;
 
-  // 如果有照片，先轉成可以儲存的格式
+  const note =
+    document.getElementById("note").value;
+
+  const photo =
+    document.getElementById("photo");
+
+  const time =
+    new Date().toLocaleString("zh-TW");
+
+
+  // ==========================
+  // 📷 有照片
+  // ==========================
+
   if (photo.files.length > 0) {
 
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
+    compressImage(photo.files[0], function(imageData) {
 
       const record = {
+
         time: time,
+
         linban: linban,
+
         result: resultType,
+
         note: note,
+
         latitude: latitude,
+
         longitude: longitude,
-        photo: e.target.result
+
+        photo: imageData
+
       };
 
       saveToStorage(record);
-    };
 
-    reader.readAsDataURL(photo.files[0]);
+    });
 
-  } else {
+  }
+
+  // ==========================
+  // 📷 沒照片
+  // ==========================
+
+  else {
 
     const record = {
+
       time: time,
+
       linban: linban,
+
       result: resultType,
+
       note: note,
+
       latitude: latitude,
+
       longitude: longitude,
+
       photo: ""
+
     };
 
     saveToStorage(record);
+
   }
+
 }
 
+
+// ==========================
+// 🗜️ 壓縮照片
+// ==========================
+
+function compressImage(file, callback) {
+
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+
+    const img = new Image();
+
+    img.onload = function() {
+
+      const canvas = document.createElement("canvas");
+
+      const maxWidth = 1200;
+
+      let width = img.width;
+      let height = img.height;
+
+
+      if (width > maxWidth) {
+
+        height =
+          height * maxWidth / width;
+
+        width = maxWidth;
+
+      }
+
+
+      canvas.width = width;
+      canvas.height = height;
+
+
+      const ctx =
+        canvas.getContext("2d");
+
+      ctx.drawImage(
+        img,
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      const compressedImage =
+        canvas.toDataURL(
+          "image/jpeg",
+          0.7
+        );
+
+
+      callback(compressedImage);
+
+    };
+
+
+    img.src = event.target.result;
+
+  };
+
+
+  reader.readAsDataURL(file);
+
+}
+
+
+// ==========================
+// 💾 寫入手機
+// ==========================
 
 function saveToStorage(record) {
 
-  let records =
-    JSON.parse(localStorage.getItem("forestRecords")) || [];
+  try {
 
-  records.push(record);
+    let records =
+      JSON.parse(
+        localStorage.getItem("forestRecords")
+      ) || [];
 
-  localStorage.setItem(
-    "forestRecords",
-    JSON.stringify(records)
-  );
 
-  alert("✅ 巡查紀錄已儲存！");
+    records.push(record);
 
-  showRecords();
+
+    localStorage.setItem(
+      "forestRecords",
+      JSON.stringify(records)
+    );
+
+
+    alert("✅ 巡查紀錄已儲存！");
+
+
+    showRecords();
+
+  }
+
+  catch (error) {
+
+    alert(
+      "❌ 儲存失敗！\n\n" +
+      "可能是手機儲存空間已滿，" +
+      "或照片檔案太大。"
+    );
+
+    console.error(error);
+
+  }
+
 }
-  
+
+
+// ==========================
+// 📋 顯示巡查紀錄
+// ==========================
+
 function showRecords() {
 
   const recordBox =
     document.getElementById("record");
 
+
   let records =
-    JSON.parse(localStorage.getItem("forestRecords")) || [];
+    JSON.parse(
+      localStorage.getItem("forestRecords")
+    ) || [];
+
 
   if (records.length === 0) {
 
@@ -206,51 +385,103 @@ function showRecords() {
       "<p>目前還沒有紀錄</p>";
 
     return;
+
   }
+
 
   recordBox.innerHTML =
     "<h2>📋 巡查紀錄</h2>";
+
 
   records.forEach(function(item, index) {
 
     recordBox.innerHTML +=
 
-      "<div style='border:1px solid #ccc;" +
-      "padding:15px;margin:15px 0;border-radius:10px;'>" +
+      "<div style='" +
+      "border:1px solid #ccc;" +
+      "padding:15px;" +
+      "margin:15px 0;" +
+      "border-radius:10px;'>" +
 
-      "<b>第 " + (index + 1) + " 筆</b><br><br>" +
+      "<b>第 " +
+      (index + 1) +
+      " 筆</b><br><br>" +
 
-      "🕐 時間：" + item.time + "<br>" +
-      "🌲 林班：" + item.linban + "<br>" +
-      "📍 緯度：" + item.latitude + "<br>" +
-      "📍 經度：" + item.longitude + "<br>" +
-      "📌 結果：" + item.result + "<br>" +
-      "📝 備註：" + item.note +
+      "🕐 時間：" +
+      item.time +
+      "<br>" +
+
+      "🌲 林班：" +
+      item.linban +
+      "<br>" +
+
+      "📍 緯度：" +
+      item.latitude +
+      "<br>" +
+
+      "📍 經度：" +
+      item.longitude +
+      "<br>" +
+
+      "📌 結果：" +
+      item.result +
+      "<br>" +
+
+      "📝 備註：" +
+      item.note +
 
       (item.photo
-        ? "<br><br><img src='" + item.photo +
+
+        ? "<br><br>" +
+          "<img src='" +
+          item.photo +
           "' style='max-width:100%;border-radius:10px;'>"
+
         : "") +
 
       "</div>";
 
   });
+
 }
- function openMap() {
+
+
+// ==========================
+// 🗺️ 開啟 Google Maps
+// ==========================
+
+function openMap() {
 
   if (!latitude || !longitude) {
+
     alert("❌ 請先取得 GPS 位置");
+
     return;
+
   }
+
 
   const mapURL =
     "https://www.google.com/maps/search/?api=1&query=" +
-    latitude + "," + longitude;
+    latitude +
+    "," +
+    longitude;
 
-  window.open(mapURL, "_blank");
+
+  window.open(
+    mapURL,
+    "_blank"
+  );
+
 }
-  
-  showRecords();
+
+
+// ==========================
+// 🚀 網頁開啟時載入紀錄
+// ==========================
+
+showRecords();
+
 </script>
   
 
